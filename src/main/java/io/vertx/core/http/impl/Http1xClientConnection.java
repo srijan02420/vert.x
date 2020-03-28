@@ -87,6 +87,7 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
   private int keepAliveTimeout;
   private int seq = 1;
   private long bytesRead;
+  private long initialTimestamp = System.currentTimeMillis();
 
 
   Http1xClientConnection(ConnectionListener<HttpClientConnection> listener,
@@ -898,7 +899,13 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
   }
 
   private void recycle() {
-    long expiration = keepAliveTimeout == 0 ? 0L : System.currentTimeMillis() + keepAliveTimeout * 1000;
+    long now = System.currentTimeMillis();
+    boolean socketTTLPassed = options.getSocketActiveTTL() != -1 && now - initialTimestamp >= options.getSocketActiveTTL() * 1000;
+    long expiration = keepAliveTimeout == 0 || socketTTLPassed ? 0L
+      : Math.min(
+        now + keepAliveTimeout * 1000,
+        now - initialTimestamp - options.getSocketActiveTTL() * 1000
+      );
     listener.onRecycle(expiration);
   }
 }
