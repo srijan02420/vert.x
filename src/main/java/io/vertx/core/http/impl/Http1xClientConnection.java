@@ -900,12 +900,12 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
 
   private void recycle() {
     long now = System.currentTimeMillis();
-    boolean socketTTLPassed = options.getSocketActiveTTL() != -1 && now - initialTimestamp >= options.getSocketActiveTTL() * 1000;
-    long expiration = keepAliveTimeout == 0 || socketTTLPassed ? 0L
-      : Math.min(
-        now + keepAliveTimeout * 1000,
-        now - initialTimestamp - options.getSocketActiveTTL() * 1000
-      );
+    long activeConnectionTTL = options.getActiveConnectionTTL() * 1000 - (now - initialTimestamp);
+    long keepAliveTTL = now + keepAliveTimeout * 1000;
+    long expiration = keepAliveTimeout == 0 || (options.isActiveConnectionTTL() && activeConnectionTTL <= 0)
+      ? 0L
+      : options.isActiveConnectionTTL() ? Math.min(keepAliveTTL, activeConnectionTTL) : keepAliveTTL
+      ;
     listener.onRecycle(expiration);
   }
 }

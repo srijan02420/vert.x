@@ -944,10 +944,10 @@ public class ConnectionPoolTest extends VertxTestBase {
       return inflight;
     }
 
-    synchronized long recycle(long keepAliveTimeout, long socketActiveTTL, long currentTimestamp) {
+    synchronized long recycle(long keepAliveTimeout, long activeConnectionTTL, long currentTimestamp) {
       inflight -= 1;
-      socketActiveTTL = socketActiveTTL - (currentTimestamp - this.initialTimestamp);
-      long expiration = keepAliveTimeout == 0 || socketActiveTTL <= 0 ? 0L : Math.min(currentTimestamp + keepAliveTimeout * 1000, socketActiveTTL);
+      activeConnectionTTL = activeConnectionTTL - (currentTimestamp - this.initialTimestamp);
+      long expiration = keepAliveTimeout == 0 || activeConnectionTTL <= 0 ? 0L : Math.min(currentTimestamp + keepAliveTimeout * 1000, activeConnectionTTL);
       listener.onRecycle(expiration);
       return inflight;
     }
