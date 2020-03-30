@@ -103,6 +103,11 @@ public class Http1xTest extends HttpTest {
     assertEquals(options, options.setTcpKeepAlive(!tcpKeepAlive));
     assertEquals(!tcpKeepAlive, options.isTcpKeepAlive());
 
+    boolean activeConnectionTTL = false;
+    assertEquals(activeConnectionTTL, options.isActiveConnectionTTL());
+    assertEquals(options, options.setIsActiveConnectionTTL(!activeConnectionTTL));
+    assertEquals(!activeConnectionTTL, options.isActiveConnectionTTL());
+
     int soLinger = -1;
     assertEquals(soLinger, options.getSoLinger());
     rand = TestUtils.randomPositiveInt();
@@ -150,6 +155,10 @@ public class Http1xTest extends HttpTest {
     assertTrue(options.isKeepAlive());
     assertEquals(options, options.setKeepAlive(false));
     assertFalse(options.isKeepAlive());
+
+    assertFalse(options.isActiveConnectionTTL());
+    assertEquals(options, options.setIsActiveConnectionTTL(true));
+    assertTrue(options.isActiveConnectionTTL());
 
     assertFalse(options.isPipelining());
     assertEquals(options, options.setPipelining(true));
@@ -4059,6 +4068,7 @@ public class Http1xTest extends HttpTest {
     testKeepAliveTimeout(new HttpClientOptions().setMaxPoolSize(1).setKeepAliveTimeout(30), 2);
   }
 
+
   private void testKeepAliveTimeout(HttpClientOptions options, int numReqs) throws Exception {
     startServer(testAddress);
     client.close();
@@ -4085,6 +4095,14 @@ public class Http1xTest extends HttpTest {
         .end();
     }
     await();
+  }
+
+  @Test
+  public void testActiveConnectionTTL() throws Exception {
+    server.requestHandler(req -> {
+      req.response().end();
+    });
+    testKeepAliveTimeout(new HttpClientOptions().setMaxPoolSize(1).setKeepAlive(true).setIsActiveConnectionTTL(true).setActiveConnectionTTL(3), 1);
   }
 
   @Test

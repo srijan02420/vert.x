@@ -904,7 +904,7 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
     long keepAliveTTL = now + keepAliveTimeout * 1000;
     long expiration = keepAliveTimeout == 0 || (options.isActiveConnectionTTL() && activeConnectionTTL <= 0)
       ? 0L
-      : options.isActiveConnectionTTL() ? Math.min(keepAliveTTL, activeConnectionTTL) : keepAliveTTL
+      : options.isActiveConnectionTTL() ? Math.min(keepAliveTTL, now + activeConnectionTTL) : keepAliveTTL
       ;
     listener.onRecycle(expiration);
   }
