@@ -894,7 +894,6 @@ public class ConnectionPoolTest extends VertxTestBase {
     private long inflight;
     private long concurrency = 1;
     private int status = DISCONNECTED;
-    private long initialTimestamp = 0L;
 
     FakeConnection(ContextInternal context, ConnectionListener<FakeConnection> listener, Promise<ConnectResult<FakeConnection>> future) {
       this.context = context;
