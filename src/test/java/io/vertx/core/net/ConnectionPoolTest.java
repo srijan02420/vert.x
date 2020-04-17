@@ -488,26 +488,6 @@ public class ConnectionPoolTest extends VertxTestBase {
   }
 
   @Test
-  public void testDiscardActiveTTLPassedConnections() {
-    FakeConnectionProvider connector = new FakeConnectionProvider();
-    FakeConnectionManager mgr = new FakeConnectionManager(2, 1, connector);
-    FakeWaiter waiter1 = new FakeWaiter();
-    mgr.getConnection(waiter1);
-    FakeConnection conn = connector.assertRequest();
-    conn.connect();
-    assertWaitUntil(waiter1::isSuccess);
-    conn.recycle(20000L, 2L, mgr.tick.get());
-    assertEquals(1, mgr.size());
-    mgr.tick(1L);
-    mgr.removeExpired();
-    assertEquals(1, mgr.size());
-    mgr.tick(1L);
-    mgr.removeExpired();
-    waitUntil(() -> mgr.size() == 0);
-    assertEquals(0, mgr.size());
-  }
-
-  @Test
   public void testCloseRecycledConnection() {
     FakeConnectionProvider connector = new FakeConnectionProvider();
     FakeConnectionManager mgr = new FakeConnectionManager(2, 1, connector);
@@ -941,14 +921,6 @@ public class ConnectionPoolTest extends VertxTestBase {
     synchronized long recycle(long timestamp) {
       inflight -= 1;
       listener.onRecycle(timestamp);
-      return inflight;
-    }
-
-    synchronized long recycle(long keepAliveTimeout, long activeConnectionTTL, long currentTimestamp) {
-      inflight -= 1;
-      activeConnectionTTL = activeConnectionTTL - (currentTimestamp - this.initialTimestamp);
-      long expiration = keepAliveTimeout == 0 || activeConnectionTTL <= 0 ? 0L : Math.min(currentTimestamp + keepAliveTimeout * 1000, activeConnectionTTL);
-      listener.onRecycle(expiration);
       return inflight;
     }
 

@@ -87,7 +87,7 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
   private int keepAliveTimeout;
   private int seq = 1;
   private long bytesRead;
-  private long initialTimestamp = System.currentTimeMillis();
+  private long initialTimestamp;
 
 
   Http1xClientConnection(ConnectionListener<HttpClientConnection> listener,
@@ -109,6 +109,8 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
     this.version = version;
     this.endpointMetric = endpointMetric;
     this.keepAliveTimeout = options.getKeepAliveTimeout();
+    if (options.isKeepAliveTTLEnabled())
+      initialTimestamp = System.currentTimeMillis();
   }
 
   Object endpointMetric() {
@@ -899,13 +901,14 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
   }
 
   private void recycle() {
-    long now = System.currentTimeMillis();
-    long activeConnectionTTL = options.getActiveConnectionTTL() * 1000 - (now - initialTimestamp);
-    long keepAliveTTL = now + keepAliveTimeout * 1000;
-    long expiration = keepAliveTimeout == 0 || (options.isActiveConnectionTTL() && activeConnectionTTL <= 0)
-      ? 0L
-      : options.isActiveConnectionTTL() ? Math.min(keepAliveTTL, now + activeConnectionTTL) : keepAliveTTL
-      ;
+    long expiration;
+    if(!options.isKeepAliveTTLEnabled())
+      expiration = keepAliveTimeout == 0 ? 0L : System.currentTimeMillis() + keepAliveTimeout * 1000;
+    else {
+      long now = System.currentTimeMillis();
+      long keepAliveTTL = options.getKeepAliveTTL() * 1000 - (now - initialTimestamp);
+      expiration = keepAliveTimeout == 0 || (keepAliveTTL <= 0) ? 0L : Math.min(now + keepAliveTimeout * 1000, now + keepAliveTTL);
+    }
     listener.onRecycle(expiration);
   }
 }

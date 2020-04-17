@@ -15,11 +15,6 @@ public class HttpClientOptionsConverter {
    static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, HttpClientOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "activeConnectionTTL":
-          if (member.getValue() instanceof Number) {
-            obj.setActiveConnectionTTL(((Number)member.getValue()).intValue());
-          }
-          break;
         case "alpnVersions":
           if (member.getValue() instanceof JsonArray) {
             java.util.ArrayList<io.vertx.core.http.HttpVersion> list =  new java.util.ArrayList<>();
@@ -77,18 +72,20 @@ public class HttpClientOptionsConverter {
           break;
         case "initialSettings":
           if (member.getValue() instanceof JsonObject) {
-            obj.setInitialSettings(new io.vertx.core.http.Http2Settings((JsonObject)member.getValue()));
-          }
-          break;
-        case "isActiveConnectionTTL":
-          if (member.getValue() instanceof Boolean) {
-            obj.setIsActiveConnectionTTL((Boolean)member.getValue());
+            obj.setInitialSettings(new io.vertx.core.http.Http2Settings((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "keepAlive":
           if (member.getValue() instanceof Boolean) {
             obj.setKeepAlive((Boolean)member.getValue());
           }
+          break;
+        case "keepAliveTTL":
+          if (member.getValue() instanceof Number) {
+            obj.setKeepAliveTTL(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "keepAliveTTLEnabled":
           break;
         case "keepAliveTimeout":
           if (member.getValue() instanceof Number) {
@@ -206,7 +203,6 @@ public class HttpClientOptionsConverter {
   }
 
    static void toJson(HttpClientOptions obj, java.util.Map<String, Object> json) {
-    json.put("activeConnectionTTL", obj.getActiveConnectionTTL());
     if (obj.getAlpnVersions() != null) {
       JsonArray array = new JsonArray();
       obj.getAlpnVersions().forEach(item -> array.add(item.name()));
@@ -227,6 +223,8 @@ public class HttpClientOptionsConverter {
       json.put("initialSettings", obj.getInitialSettings().toJson());
     }
     json.put("keepAlive", obj.isKeepAlive());
+    json.put("keepAliveTTL", obj.getKeepAliveTTL());
+    json.put("keepAliveTTLEnabled", obj.isKeepAliveTTLEnabled());
     json.put("keepAliveTimeout", obj.getKeepAliveTimeout());
     json.put("maxChunkSize", obj.getMaxChunkSize());
     json.put("maxHeaderSize", obj.getMaxHeaderSize());
