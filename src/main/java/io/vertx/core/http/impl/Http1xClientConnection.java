@@ -76,6 +76,7 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
   private final Object endpointMetric;
   private final HttpClientMetrics metrics;
   private final HttpVersion version;
+  private final long initialTimestamp;
 
   private Deque<Stream> requests = new ArrayDeque<>();
   private Deque<Stream> responses = new ArrayDeque<>();
@@ -87,7 +88,6 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
   private int keepAliveTimeout;
   private int seq = 1;
   private long bytesRead;
-  private long initialTimestamp;
 
 
   Http1xClientConnection(ConnectionListener<HttpClientConnection> listener,
@@ -109,8 +109,7 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
     this.version = version;
     this.endpointMetric = endpointMetric;
     this.keepAliveTimeout = options.getKeepAliveTimeout();
-    if (options.isKeepAliveTTLEnabled())
-      initialTimestamp = System.currentTimeMillis();
+    initialTimestamp = options.isKeepAliveTTLEnabled() ? System.currentTimeMillis() : 0L;
   }
 
   Object endpointMetric() {
