@@ -85,8 +85,6 @@ public class HttpClientOptionsConverter {
             obj.setKeepAliveTTL(((Number)member.getValue()).intValue());
           }
           break;
-        case "keepAliveTTLEnabled":
-          break;
         case "keepAliveTimeout":
           if (member.getValue() instanceof Number) {
             obj.setKeepAliveTimeout(((Number)member.getValue()).intValue());
@@ -224,7 +222,6 @@ public class HttpClientOptionsConverter {
     }
     json.put("keepAlive", obj.isKeepAlive());
     json.put("keepAliveTTL", obj.getKeepAliveTTL());
-    json.put("keepAliveTTLEnabled", obj.isKeepAliveTTLEnabled());
     json.put("keepAliveTimeout", obj.getKeepAliveTimeout());
     json.put("maxChunkSize", obj.getMaxChunkSize());
     json.put("maxHeaderSize", obj.getMaxHeaderSize());
