@@ -86,6 +86,7 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
   private boolean close;
   private Promise<NetSocket> netSocketPromise;
   private int keepAliveTimeout;
+  private long expirationTimestamp;
   private int seq = 1;
   private long bytesRead;
 
@@ -899,15 +900,19 @@ class Http1xClientConnection extends Http1xConnectionBase<WebSocketImpl> impleme
     }
   }
 
+  @Override
+  public boolean isValid() {
+    return expirationTimestamp > 0 && System.currentTimeMillis() <= expirationTimestamp;
+  }
+
   private void recycle() {
-    long expiration;
     if(!options.isKeepAliveTTLEnabled())
-      expiration = keepAliveTimeout == 0 ? 0L : System.currentTimeMillis() + keepAliveTimeout * 1000;
+      expirationTimestamp = keepAliveTimeout == 0 ? 0L : System.currentTimeMillis() + keepAliveTimeout * 1000;
     else {
       long now = System.currentTimeMillis();
       long keepAliveTTL = options.getKeepAliveTTL() * 1000 - (now - initialTimestamp);
-      expiration = keepAliveTimeout == 0 || (keepAliveTTL <= 0) ? 0L : Math.min(now + keepAliveTimeout * 1000, now + keepAliveTTL);
+      expirationTimestamp = keepAliveTimeout == 0 || (keepAliveTTL <= 0) ? 0L : Math.min(now + keepAliveTimeout * 1000, now + keepAliveTTL);
     }
-    listener.onRecycle(expiration);
+    listener.onRecycle();
   }
 }
